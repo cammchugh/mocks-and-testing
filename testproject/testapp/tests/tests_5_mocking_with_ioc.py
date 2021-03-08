@@ -27,6 +27,8 @@ class InversionOfControlDependencyInjectionExample(SimpleTestCase):
         })
 
         # Pass the dependencies via the constructor.
+        # Now you're decoupled from the specific implementations of BillingSystem and SlowStringFormatter, and
+        # instead are only coupled to the (implied) interface.
         formatter = PayPerUseStringFormatter(
             formatter=mock_slow_formatter,
             billing_system=mock_billing_system

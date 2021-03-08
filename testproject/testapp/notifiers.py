@@ -10,6 +10,7 @@ class BestsellerNotifierVersion1(object):
     def notify_current_best_sellers(self):
         dwilio_client = DwilioClient()
         last_week = datetime.now() - timedelta(days=7)
+        # This query is wrong, total_sold is not right. I don't care :p
         best_sellers = Book.objects.annotate(total_sales=Sum('booksold__price'), total_sold=Count('booksold')).\
             filter(booksold__date__gte=last_week)
         for book in best_sellers:
