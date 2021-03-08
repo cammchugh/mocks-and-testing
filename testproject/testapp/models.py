@@ -24,7 +24,7 @@ class Book(models.Model):
     @classmethod
     def best_sellers_last_week(cls):
         last_week = datetime.now() - timedelta(days=7)
-        cls.objects.bestsellers(since=last_week)
+        cls.objects.bestsellers(last_week)
 
 
 class BookSold(models.Model):
