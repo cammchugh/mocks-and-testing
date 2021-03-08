@@ -10,13 +10,13 @@ class SimpleMockExamples(SimpleTestCase):
         mock.foo = 'foo'
         mock.bar.return_value = 1
         # assert expected values
-        self.assertEquals('foo', mock.foo)
-        self.assertEquals(1, mock.bar())
+        self.assertEqual('foo', mock.foo)
+        self.assertEqual(1, mock.bar())
         # anything else returns a new mock.
         x = mock.whatever
-        self.assertEquals(ANY, x)
+        self.assertEqual(ANY, x)
         y = mock.doesnt_matter()
-        self.assertEquals(ANY, y)
+        self.assertEqual(ANY, y)
 
     # making standard unittest assertions, and mock specific assertions
     def test_mock_assertions(self):
@@ -26,9 +26,9 @@ class SimpleMockExamples(SimpleTestCase):
         # was it called
         self.assertTrue(mock.some_method.called)
         # how many times it was called
-        self.assertEquals(1, mock.some_method.call_count)
+        self.assertEqual(1, mock.some_method.call_count)
         # how was it called
-        self.assertEquals(call(1, 2, value=3), mock.some_method.call_args)
+        self.assertEqual(call(1, 2, value=3), mock.some_method.call_args)
 
         # more concisely
         mock.some_method.assert_called()
@@ -41,7 +41,7 @@ class SimpleMockExamples(SimpleTestCase):
         # was it called
         self.assertFalse(mock.some_method.called)
         # how many times it was called
-        self.assertEquals(0, mock.some_method.call_count)
+        self.assertEqual(0, mock.some_method.call_count)
         # more concisely, but only python >= 3.5
         mock.some_method.assert_not_called()
 
@@ -51,7 +51,7 @@ class SimpleMockExamples(SimpleTestCase):
         mock.some_method(1, 2, value=3)
         mock.some_method(4, 5, value=6)
         # nope
-        self.assertEquals(call(1, 2, value=3), mock.some_method.call_args)
+        self.assertEqual(call(1, 2, value=3), mock.some_method.call_args)
 
     # Pitfall: This affects assert_called_with as well.
     def test_mock_assertions_multiple_calls_with_called_with(self):
@@ -76,11 +76,11 @@ class SimpleMockExamples(SimpleTestCase):
         mock.some_method(1, 2, value=3)
         mock.some_method(4, 5, value=6)
 
-        self.assertEquals(
+        self.assertEqual(
             call(1, 2, value=3),
             mock.some_method.mock_calls[0]
         )
-        self.assertEquals(
+        self.assertEqual(
             call(4, 5, value=6),
             mock.some_method.mock_calls[1]
         )
@@ -92,7 +92,7 @@ class SimpleMockExamples(SimpleTestCase):
         mock.some_method(4, 5, value=6)
 
         # call_args_list stores args for all calls, in order received
-        self.assertEquals(
+        self.assertEqual(
             [
                 call(1, 2, value=3),
                 call(4, 5, value=6)
@@ -102,15 +102,15 @@ class SimpleMockExamples(SimpleTestCase):
 
         # 'call' is just a wrapper around tuple
         args, kwargs = mock.some_method.call_args
-        self.assertEquals((4, 5), args)
-        self.assertEquals({'value': 6}, kwargs)
+        self.assertEqual((4, 5), args)
+        self.assertEqual({'value': 6}, kwargs)
 
         # Calls to methods on are recorded both at the level of the mocked method, and the mock(ed class) itself.
         # Call objects on the parent mock are a bit different, they include the name of the callable.
         name, args, kwargs = mock.mock_calls[0]
-        self.assertEquals('some_method', name)
-        self.assertEquals((1, 2), args)
-        self.assertEquals({'value': 3}, kwargs)
+        self.assertEqual('some_method', name)
+        self.assertEqual((1, 2), args)
+        self.assertEqual({'value': 3}, kwargs)
 
     # Sometimes, assert_called_with can be difficult when passing complex objects as parameters.
     def test_assert_called_with_object_fails_due_to_reference_equality(self):
@@ -175,11 +175,11 @@ class SimpleMockExamples(SimpleTestCase):
         magic_mock.__int__.return_value = 3
         self.assertEqual(3, int(magic_mock))
         magic_mock.__iter__.return_value = iter([1, 2])
-        self.assertEquals([1, 2], list(magic_mock))
+        self.assertEqual([1, 2], list(magic_mock))
         magic_mock.__bool__.return_value = False
         self.assertFalse(bool(magic_mock))
         magic_mock.__str__.return_value = 'asdf'
-        self.assertEquals('asdf', str(magic_mock))
+        self.assertEqual('asdf', str(magic_mock))
         # and more, look at the docs
 
     # Here's where the flexibility of mock can be a real problem.
@@ -273,7 +273,7 @@ class SimpleMockExamples(SimpleTestCase):
         with self.assertRaises(Exception) as ex_context:
             mock.goes_boom()
 
-        self.assertEquals('Boom', str(ex_context.exception))
+        self.assertEqual('Boom', str(ex_context.exception))
 
     # side_effect can help if you want mocked methods to do non-trivial things.
     # IE: setting unique return values for sequential calls.
@@ -286,7 +286,7 @@ class SimpleMockExamples(SimpleTestCase):
         value2 = mock.return_an_integer()
         value3 = mock.return_an_integer()
 
-        self.assertEquals([1, 2, 3], [value1, value2, value3])
+        self.assertEqual([1, 2, 3], [value1, value2, value3])
 
         # walking off the end raises StopIteration
         with self.assertRaises(StopIteration):
@@ -301,8 +301,8 @@ class SimpleMockExamples(SimpleTestCase):
 
         # basic constructor params
         mock1 = Mock(the_answer=42, return_value='thanks for all the fish')
-        self.assertEquals(42, mock1.the_answer)
-        self.assertEquals('thanks for all the fish', mock1())
+        self.assertEqual(42, mock1.the_answer)
+        self.assertEqual('thanks for all the fish', mock1())
 
         # use a dictionary for non-trivial setup
         return_values = [1, 2, 3]

@@ -3,6 +3,7 @@ from unittest.mock import patch
 
 # Let's look at a horrible abuse of mocking, and just generally bad testing practice.
 
+
 # Some made up production code.
 class Foo(object):
 
@@ -34,7 +35,7 @@ def call_all_the_methods_and_return_the_sum():
 
 class TestDrivenTheatre(SimpleTestCase):
     """
-    This is what might typically call a "fantasy test".
+    This is what might typically be called a "fantasy test".
     It's only testing the collaborator integration, everything is mocked.
     Can't change a line of code in the method under test without updating the test.
     Steve Freeman (Growing OO Software, Guided by Tests) calls this an MD5 test.

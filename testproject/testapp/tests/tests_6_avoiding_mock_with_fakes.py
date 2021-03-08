@@ -25,6 +25,7 @@ class FakeFormatter(SlowStringFormatter):
     def _this_is_the_slow_part(self):
         pass
 
+
 # With our previous change to "inject" dependencies, we can pass Fakes instead of mocks.
 class UsingFakesWithDependencyInjection(SimpleTestCase):
 
