@@ -6,10 +6,12 @@ from ..pay_per_use_formatter import PayPerUseStringFormatter
 from ..slow_formatter import SlowStringFormatter
 
 
+# Patch is kind of gross, even the author of mock says so.
+# With a few minor changes can help you completely avoid it.
+# Is this "damage" or "good design"? Depends on who you ask.
 class InversionOfControlDependencyInjectionExample(SimpleTestCase):
 
-    # patch is kind of gross, and with a few minor changes can help you completely avoid it.
-    def test_patching_classes(self):
+    def test_no_patching_here_thank_you_very_much(self):
         # setup
         # use the mock class return_value to get the instance that will be returned under test
         mock_billing_system = Mock(spec=BillingSystem, **{

@@ -2,7 +2,6 @@ from django.test import SimpleTestCase
 from unittest.mock import patch
 
 import testapp.billing
-# note, patch where the class is imported, not defined.
 from ..pay_per_use_formatter import PayPerUseStringFormatter, SlowStringFormatter
 
 

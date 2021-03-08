@@ -19,17 +19,16 @@ class FakeBillingSystem(object):
 
 
 # Override production class to remove undesirable behaviour.
-# This is a bit sus though, couples to implementation details.
+# This is a bit sus though, still couples to implementation details.
 class FakeFormatter(SlowStringFormatter):
 
     def _this_is_the_slow_part(self):
         pass
 
-
+# With our previous change to "inject" dependencies, we can pass Fakes instead of mocks.
 class UsingFakesWithDependencyInjection(SimpleTestCase):
 
-    # patch is kind of gross, and with a few minor changes can help you completely avoid it.
-    def test_patching_classes(self):
+    def test_no_mocking_(self):
         # setup
         fake_billing_system = FakeBillingSystem()
         fake_formatter = FakeFormatter()
@@ -50,6 +49,8 @@ class UsingFakesWithDependencyInjection(SimpleTestCase):
         self.assertEqual('string1 string2 string3', concatenated_result)
 
 
+# If you prefer fakes to mocks, but don't have "seams" through which to inject them, then you can fall back to
+# using patch to replace the actual implementations.
 class UsingFakesWithPatch(SimpleTestCase):
 
     # patch is kind of gross, and with a few minor changes can help you completely avoid it.

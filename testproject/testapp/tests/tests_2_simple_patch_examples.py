@@ -8,6 +8,7 @@ def my_get_cwd():
     return os.getcwd()
 
 
+# Basic patch example, decorator vs. context_manager
 class SimplePatchExamples(SimpleTestCase):
 
     @patch('os.getcwd')
@@ -23,6 +24,7 @@ class SimplePatchExamples(SimpleTestCase):
         self.assertEqual('foo', actual_cwd)
 
 
+# Patch for every test method, adds mock param to every test method.
 @patch('os.getcwd')
 class PatchEveryTestWithADecorator(SimpleTestCase):
 
@@ -39,6 +41,7 @@ class PatchEveryTestWithADecorator(SimpleTestCase):
         self.assertEqual('baz', my_get_cwd())
 
 
+# Patch for every test method, use a patcher to avoid adding params to all methods.
 class PatchEveryTestWithAPatcher(SimpleTestCase):
 
     def setUp(self):

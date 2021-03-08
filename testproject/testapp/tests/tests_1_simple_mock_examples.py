@@ -4,6 +4,7 @@ from unittest.mock import call, create_autospec, ANY, Mock, MagicMock
 
 class SimpleMockExamples(SimpleTestCase):
 
+    # basic mock attribute and method setup
     def test_simple_mock_example(self):
         mock = Mock()
         mock.foo = 'foo'
@@ -17,6 +18,7 @@ class SimpleMockExamples(SimpleTestCase):
         y = mock.doesnt_matter()
         self.assertEquals(ANY, y)
 
+    # making standard unittest assertions, and mock specific assertions
     def test_mock_assertions(self):
         mock = Mock()
         mock.some_method(1, 2, value=3)
@@ -33,6 +35,7 @@ class SimpleMockExamples(SimpleTestCase):
         mock.some_method.assert_called_once()
         mock.some_method.assert_called_once_with(1, 2, value=3)
 
+    # negative assertions
     def test_negative_assertions(self):
         mock = Mock()
         # was it called
@@ -42,6 +45,7 @@ class SimpleMockExamples(SimpleTestCase):
         # more concisely, but only python >= 3.5
         mock.some_method.assert_not_called()
 
+    # Pitfall: asserting on multiple calls to a mock, call_args only stores last call.
     def test_mock_assertions_multiple_calls_with_call_args(self):
         mock = Mock()
         mock.some_method(1, 2, value=3)
@@ -49,6 +53,7 @@ class SimpleMockExamples(SimpleTestCase):
         # nope
         self.assertEquals(call(1, 2, value=3), mock.some_method.call_args)
 
+    # Pitfall: This affects assert_called_with as well.
     def test_mock_assertions_multiple_calls_with_called_with(self):
         mock = Mock()
         mock.some_method(1, 2, value=3)
@@ -56,6 +61,16 @@ class SimpleMockExamples(SimpleTestCase):
         # still nope
         mock.some_method.assert_called_with(1, 2, value=3)
 
+    # If you don't care about order, use assert_any_call
+    def test_mock_assertions_multiple_calls_any(self):
+        mock = Mock()
+        mock.some_method(1, 2, value=3)
+        mock.some_method(4, 5, value=6)
+        mock.some_method.assert_any_call(4, 5, value=6)
+        mock.some_method.assert_any_call(1, 2, value=3)
+
+    # When you do care about order, mocks record and store all method calls internally on 'mock_calls' in the
+    # order they were received.
     def test_mock_assertions_multiple_calls_args_list(self):
         mock = Mock()
         mock.some_method(1, 2, value=3)
@@ -70,23 +85,13 @@ class SimpleMockExamples(SimpleTestCase):
             mock.some_method.mock_calls[1]
         )
 
-    def test_mock_assertions_multiple_calls_any(self):
-        mock = Mock()
-        mock.some_method(1, 2, value=3)
-        mock.some_method(4, 5, value=6)
-        # maybe we don't care about order
-        mock.some_method.assert_any_call(4, 5, value=6)
-        mock.some_method.assert_any_call(1, 2, value=3)
-
+    # lets look at how mocks record method calls in a bit more detail.
     def test_some_internal_details_of_a_mock(self):
         mock = Mock()
         mock.some_method(1, 2, value=3)
         mock.some_method(4, 5, value=6)
 
-        # call_args only stores most recent call
-        self.assertEquals(call(4, 5, value=6), mock.some_method.call_args)
-
-        # call_args_list stores all calls, in order received
+        # call_args_list stores args for all calls, in order received
         self.assertEquals(
             [
                 call(1, 2, value=3),
@@ -100,12 +105,14 @@ class SimpleMockExamples(SimpleTestCase):
         self.assertEquals((4, 5), args)
         self.assertEquals({'value': 6}, kwargs)
 
-        # but calls in the base mock's mock_calls/method_calls are different, they include the name of the callable.
+        # Calls to methods on are recorded both at the level of the mocked method, and the mock(ed class) itself.
+        # Call objects on the parent mock are a bit different, they include the name of the callable.
         name, args, kwargs = mock.mock_calls[0]
         self.assertEquals('some_method', name)
         self.assertEquals((1, 2), args)
         self.assertEquals({'value': 3}, kwargs)
 
+    # Sometimes, assert_called_with can be difficult when passing complex objects as parameters.
     def test_assert_called_with_object_fails_due_to_reference_equality(self):
 
         class MyObject(object):
@@ -125,6 +132,8 @@ class SimpleMockExamples(SimpleTestCase):
         # this won't work, maybe you should implement __eq__?
         mock.method_with_object_param.assert_called_once_with(expected_arg_obj, kwarg_obj=expected_kwarg_obj)
 
+    # You might have to dig the objects out of the calls and assert on their attributes.
+    # It gets messy quickly so avoid unless you *really* need it.
     def test_assert_called_with_object_assert_on_attributes_of_call_args_instead(self):
 
         class MyObject(object):
@@ -138,25 +147,30 @@ class SimpleMockExamples(SimpleTestCase):
         actual_kwarg_obj = MyObject(2)
         mock.method_with_object_param(actual_arg_obj, kwarg_obj=actual_kwarg_obj)
 
-        # you can dig into the calls to get the args, but it gets messy quickly so avoid unless you *really* need it.
+        # grab a reference to the parameters and assert on attributes.
         mock.method_with_object_param.assert_called_once()
         actual_call = mock.method_with_object_param.mock_calls[0]
         self.assertEqual(1, actual_call.args[0].attr1)
         self.assertEqual(2, actual_call.kwargs['kwarg_obj'].attr1)
 
+    # What is so magical about MagicMock?
+    # Allows you to patch pythons __magic__ methods, and in some cases provides sensible defaults.
+    # I prefer Mock, but MagicMock is the default returned by patch, so :shrug:
     def test_magic_mock(self):
         mock = Mock()
-        # nope
+
+        # Surprise, a mock is not an int.
         with self.assertRaises(TypeError):
             self.assertEqual(1, int(mock))
 
-        # still nope
+        # And you can't convince it to be one either.
         with self.assertRaises(AttributeError):
             mock.__int__.return_value = 1
 
-        # MagicMock to the rescue
+        # MagicMock to the rescue :tada:
         magic_mock = MagicMock()
         self.assertEqual(1, int(magic_mock))
+
         # defaults supplied for all magic methods, but you can override.
         magic_mock.__int__.return_value = 3
         self.assertEqual(3, int(magic_mock))
@@ -168,13 +182,15 @@ class SimpleMockExamples(SimpleTestCase):
         self.assertEquals('asdf', str(magic_mock))
         # and more, look at the docs
 
+    # Here's where the flexibility of mock can be a real problem.
     def test_common_pitfalls(self):
         mock = Mock()
         # a mock is truthy
         self.assertTrue(mock.foo)
-        # typos FTW
+        # What???   Typos FTW
         mock.foo.asssert_called_once()
 
+    # You can avoid this by setting specs for your mocks, but you have generally have to import the spec.
     def test_spec_to_the_rescue(self):
 
         class MyClass(object):
@@ -197,13 +213,14 @@ class SimpleMockExamples(SimpleTestCase):
         mock.bar.return_value = 'asdf'
         self.assertEqual('asdf', mock.bar())
 
-        # still typos FTW, though
+        # still typos FTW, though, the mock returned by bar is not just an unspecc'd mock.
         mock.bar.asssert_called_once()
 
         # and you can still screw it up a bit too.
         mock.not_a_real_attribute = 5
         self.assertEqual(5, mock.not_a_real_attribute)
 
+    # auto speccing is speccing on steroids.
     def test_autospec_turtles_all_the_way_down(self):
 
         class MyClass(object):
@@ -227,6 +244,7 @@ class SimpleMockExamples(SimpleTestCase):
         with self.assertRaises(AttributeError):
             mock.not_an_attribute = 5
 
+    # auto speccing introspects classes, attributes that are not defined at a class level are not spec'd
     def test_auto_spec_limitations(self):
 
         class MyClass(object):
@@ -245,6 +263,8 @@ class SimpleMockExamples(SimpleTestCase):
         # Docs say you can use an instance in the spec, or subclass your production class and add class level
         # defaults. Not sure I love either of those options.
 
+    # side_effect can help if you want mocked methods to do non-trivial things.
+    # IE: raising an exception
     def test_raising_an_exception(self):
 
         mock = Mock()
@@ -255,6 +275,8 @@ class SimpleMockExamples(SimpleTestCase):
 
         self.assertEquals('Boom', str(ex_context.exception))
 
+    # side_effect can help if you want mocked methods to do non-trivial things.
+    # IE: setting unique return values for sequential calls.
     def test_multiple_return_values(self):
 
         mock = Mock()
@@ -270,6 +292,11 @@ class SimpleMockExamples(SimpleTestCase):
         with self.assertRaises(StopIteration):
             mock.return_an_integer()
 
+    # There are a number of ways to intialize mocks.
+    # Create the mock and apply expectations indivually
+    # Create the mock and supply simple setup as kwargs
+    # Create the mock and supply a dict using **attrs
+    # Use mock.configure_mock(**attrs)
     def test_methods_of_initialization(self):
 
         # basic constructor params
